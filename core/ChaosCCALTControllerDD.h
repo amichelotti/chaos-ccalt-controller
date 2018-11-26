@@ -19,7 +19,7 @@ limitations under the License.
 #ifndef __driver_ChaosCCALTControllerDD_h__
 #define __driver_ChaosCCALTControllerDD_h__
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
-#include <common/CCALTController/core/AbstractCCALTController.h>
+#include "AbstractCCALTController.h"
 DEFINE_CU_DRIVER_DEFINITION_PROTOTYPE(ChaosCCALTControllerDD)
 namespace cu_driver = chaos::cu::driver_manager::driver;
 namespace chaos {
