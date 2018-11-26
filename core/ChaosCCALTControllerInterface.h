@@ -23,7 +23,7 @@ limitations under the License.
 #include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
 #include <common/debug/core/debug.h>
 #include <stdint.h>
-#include <common/CCALTController/core/AbstractCCALTController.h>
+#include "AbstractCCALTController.h"
 namespace chaos_driver=::chaos::cu::driver_manager::driver;
 namespace chaos {
 	namespace driver {

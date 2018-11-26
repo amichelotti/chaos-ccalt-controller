@@ -58,6 +58,7 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,"no name for snapshot in configuration" );
 		setWorkState(false);
 		BC_FAULT_RUNNING_PROPERTY
+		
 		return;
 	}
 	std::map<u_int64_t,std::string> retMap;
