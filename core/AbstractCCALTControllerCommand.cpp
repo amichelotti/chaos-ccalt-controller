@@ -105,6 +105,7 @@ bool AbstractCCALTControllerCommand::CalculateState(chaos::common::data::CDWShrd
 	}
 	
 	strcpy(o_status_desc,description.c_str());
+	return true;
 }
 
 std::pair<std::vector<int32_t>,std::vector<std::string>> AbstractCCALTControllerCommand::checkHealthState() {
