@@ -69,6 +69,8 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 		if ((*Iter).second == gib1SetPoint)
 		{
 			//GIB1->init()
+			//
+			GIB1->restoreDeviceToTag(gib1SetPoint);
 			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
 			found=true;
 
@@ -82,7 +84,7 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 	{
 		if ((*Iter).second == gib2SetPoint)
 		{
-			//GIB1->init()
+			GIB2->restoreDeviceToTag(gib2SetPoint);
 			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
 			found=true;
 
@@ -96,7 +98,7 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 	{
 		if ((*Iter).second == gib3SetPoint)
 		{
-			//GIB1->init()
+			GIB3->restoreDeviceToTag(gib3SetPoint);
 			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
 			found=true;
 
@@ -108,9 +110,9 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 	found=false;
 	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
 	{
-		if ((*Iter).second == gib3SetPoint)
+		if ((*Iter).second == gib4SetPoint)
 		{
-			//GIB1->init()
+			GIB1->restoreDeviceToTag(gib4SetPoint);
 			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
 			found=true;
 
