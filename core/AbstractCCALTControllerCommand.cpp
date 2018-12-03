@@ -24,7 +24,7 @@ limitations under the License.
 using namespace driver::ccaltcontroller;
 namespace chaos_batch = chaos::common::batch_command;
 using namespace chaos::cu::control_manager;
-AbstractCCALTControllerCommand::AbstractCCALTControllerCommand() {
+AbstractCCALTControllerCommand::AbstractCCALTControllerCommand():GIB1(NULL),GIB2(NULL),GIB3(NULL),GIB4(NULL) {
 	ccaltcontroller_drv = NULL;
 	GIB1= new ::driver::misc::ChaosController("CCALT/GIB/GIB1");
 	GIB2= new ::driver::misc::ChaosController("CCALT/GIB/GIB2");
@@ -44,6 +44,8 @@ AbstractCCALTControllerCommand::~AbstractCCALTControllerCommand() {
 	if (GIB4)
 		delete(GIB4);
 	
+	GIB1=GIB2=GIB3=GIB4=NULL;
+	
 }
 void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 	CMDCUDBG_ << "loading pointer for output channel"; 
@@ -59,7 +61,6 @@ void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 			ccaltcontroller_drv = new chaos::driver::ccaltcontroller::ChaosCCALTControllerInterface(ccaltcontroller_accessor);
 		}
 	}
-	if (GIB1 == NULL)
 	
 }
 // return the implemented handler

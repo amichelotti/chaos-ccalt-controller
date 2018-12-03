@@ -45,7 +45,7 @@ namespace driver {
 			void ccHandler();
 			void setHandler(c_data::CDataWrapper *data);
 			void setWorkState(bool working);
-			::driver::misc::ChaosController *GIB1=NULL;
+			::driver::misc::ChaosController *GIB1;
 			::driver::misc::ChaosController *GIB2;
 			::driver::misc::ChaosController *GIB3;
 			::driver::misc::ChaosController *GIB4;
