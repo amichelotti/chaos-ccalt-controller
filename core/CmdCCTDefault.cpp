@@ -57,7 +57,7 @@ void own::CmdCCTDefault::acquireHandler() {
 	
 	try
 	{
-		//SCLDBG_ << "ALEDEBUG STATUS GIB1 " << GIB1->getJsonState();
+		SCLDBG_ << "ALEDEBUG STATUS GIB1 " ;
 		//dpck_mds_ats o dpck_hr_ats o dpck_ats
 		//std::string inJson =GIB1->fetchJson(0);
 		std::pair<std::vector<int32_t>,std::vector<std::string>> retCuState=this->checkHealthState();

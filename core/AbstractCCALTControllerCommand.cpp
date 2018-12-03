@@ -26,11 +26,24 @@ namespace chaos_batch = chaos::common::batch_command;
 using namespace chaos::cu::control_manager;
 AbstractCCALTControllerCommand::AbstractCCALTControllerCommand() {
 	ccaltcontroller_drv = NULL;
+	GIB1= new ::driver::misc::ChaosController("CCALT/GIB/GIB1");
+	GIB2= new ::driver::misc::ChaosController("CCALT/GIB/GIB2");
+	GIB3= new ::driver::misc::ChaosController("CCALT/GIB/GIB3");
+	GIB4= new ::driver::misc::ChaosController("CCALT/GIB/GIB4");
 }
 AbstractCCALTControllerCommand::~AbstractCCALTControllerCommand() {
 	if(ccaltcontroller_drv)
 		delete(ccaltcontroller_drv);
 	ccaltcontroller_drv = NULL;
+	if (GIB1)
+		delete(GIB1);
+	if (GIB2)
+		delete(GIB2);
+	if (GIB3)
+		delete(GIB3);
+	if (GIB4)
+		delete(GIB4);
+	
 }
 void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 	CMDCUDBG_ << "loading pointer for output channel"; 
@@ -46,10 +59,8 @@ void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 			ccaltcontroller_drv = new chaos::driver::ccaltcontroller::ChaosCCALTControllerInterface(ccaltcontroller_accessor);
 		}
 	}
-	GIB1= new ::driver::misc::ChaosController("CCALT/GIB/GIB1");
-	GIB2= new ::driver::misc::ChaosController("CCALT/GIB/GIB2");
-	GIB3= new ::driver::misc::ChaosController("CCALT/GIB/GIB3");
-	GIB4= new ::driver::misc::ChaosController("CCALT/GIB/GIB4");
+	if (GIB1 == NULL)
+	
 }
 // return the implemented handler
 uint8_t AbstractCCALTControllerCommand::implementedHandler() {
