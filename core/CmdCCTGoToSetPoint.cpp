@@ -49,9 +49,9 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 	int err=0;
 	
 	gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
+	gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
+	gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB3");
+	gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
 	if ((gib1SetPoint==NULL)||(gib2SetPoint==NULL)||(gib3SetPoint==NULL)||(gib4SetPoint==NULL) )
 	{
 		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelWarning);
@@ -122,7 +122,8 @@ void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 
 	if (err != 0)
 	{
-		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," command GoToSetPoint not acknowledged");
+		std::string errorString = " command GoToSetPoint not acknowledged " ;
+		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,errorString);
 		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
 		setWorkState(false);
 		BC_FAULT_RUNNING_PROPERTY

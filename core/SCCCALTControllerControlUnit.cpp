@@ -62,6 +62,26 @@ PUBLISHABLE_CONTROL_UNIT_IMPLEMENTATION(::driver::ccaltcontroller::SCCCALTContro
 	}
 }
 //handlers
+bool ::driver::ccaltcontroller::SCCCALTControllerControlUnit::setBehaviour(const std::string &name, int32_t value, uint32_t size)
+{
+  if (value != 0)
+  {
+	int32_t* i_setPointBehaviour=getAttributeCache()->getRWPtr<int32_t>(DOMAIN_INPUT,"registered_setpoint_behaviour");
+	char		*gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
+	char		*gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
+	char		*gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB3");
+	char		*gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
+	if ((gib1SetPoint==NULL)||(gib2SetPoint==NULL)||(gib3SetPoint==NULL)||(gib4SetPoint==NULL) )
+	{
+		//setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelWarning);
+		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,"cannot activate control over setPoint. No enough setpoints in configuration" );
+		*i_setPointBehaviour=0;
+		return false;
+	}
+	
+  }
+  return true;
+}
 //end handlers
 void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineActionAndDataset()  {
 	installCommand(BATCH_COMMAND_GET_DESCRIPTION(CmdCCTDefault),true);
@@ -127,7 +147,16 @@ void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineActionAn
 							"name of the snapshot for the working position of the GIB4",
 							DataType::TYPE_STRING,
 							DataType::Input, 256);
+	addAttributeToDataSet("registered_setpoint_behaviour",
+							"0: No Actions, 1: Signal if voltages out of setpoint, 2: restore automatically setpoint when found out of set",
+							DataType::TYPE_INT32,
+							DataType::Input);
 	
+	addHandlerOnInputAttributeName<::driver::ccaltcontroller::SCCCALTControllerControlUnit, int32_t>(this,
+                                                                                           &::driver::ccaltcontroller::SCCCALTControllerControlUnit::setBehaviour, "registered_setpoint_behaviour");
+
+
+
 	addStateVariable(StateVariableTypeAlarmCU,"gib_data_retrieving_error",
 		"Raised when the controller fails to receive data from MDS");
 

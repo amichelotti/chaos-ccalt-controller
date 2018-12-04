@@ -46,10 +46,99 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 	o_gib2_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB2_Voltages");
 	o_gib3_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB3_Voltages");
 	o_gib4_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB4_Voltages");
+	i_setPointBehaviour=getAttributeCache()->getRWPtr<int32_t>(DOMAIN_INPUT,"registered_setpoint_behaviour");
+
+	if ((i_setPointBehaviour!= NULL) && (*i_setPointBehaviour != 0))
+	{
+		char* gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
+		char* gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
+		char* gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB3");
+		char* gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
+		if ((gib1SetPoint!=NULL)&&(gib2SetPoint!=NULL)&&(gib3SetPoint!=NULL)&&(gib4SetPoint!=NULL) )
+		{
+
+			std::map<u_int64_t,std::string> retMap;
+			GIB1->getSnapshotsofCU(GIB1Name,retMap);
+			bool found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib1SetPoint)
+				{
+					found=true;
+					this->gib1_setpoint=(*Iter).second;
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib1SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB2->getSnapshotsofCU(GIB2Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib2SetPoint)
+				{
+					found=true;
+					this->gib2_setpoint=(*Iter).second;
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib2SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB3->getSnapshotsofCU(GIB3Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib3SetPoint)
+				{
+					found=true;
+					this->gib3_setpoint=(*Iter).second;
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib3SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB4->getSnapshotsofCU(GIB4Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib4SetPoint)
+				{
+					found=true;
+					this->gib4_setpoint=(*Iter).second;
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib4SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+		}
+		else
+		{
+			std::string errStr=" Not enough setpoint configured. Control over setpoint cannot be activated" + std::string(gib4SetPoint);
+			metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+			*i_setPointBehaviour=0;
+		}
+	}
+
+
+
+
+
 	clearFeatures(chaos_batch::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT);
 	setBusyFlag(false);
 	
-	SCLAPP_ << "Set Handler Default " ; 
+	SCLAPP_ << "Set Handler Default " ;
 	BC_NORMAL_RUNNING_PROPERTY
 }
 // empty acquire handler
@@ -57,7 +146,7 @@ void own::CmdCCTDefault::acquireHandler() {
 	
 	try
 	{
-		SCLDBG_ << "ALEDEBUG STATUS GIB1 " ;
+		
 		//dpck_mds_ats o dpck_hr_ats o dpck_ats
 		//std::string inJson =GIB1->fetchJson(0);
 		std::pair<std::vector<int32_t>,std::vector<std::string>> retCuState=this->checkHealthState();
@@ -178,6 +267,13 @@ void own::CmdCCTDefault::acquireHandler() {
 		else
 		{
 			this->CheckGibsAlarms(CUAlarmsDataset,o_alarms,4);
+		}
+		if ((i_setPointBehaviour != NULL) && (*i_setPointBehaviour != 0))
+		{
+			//snapshots exists.
+			SCLAPP_ << "ALEDEBUG: Controlling setpoint variations" ;
+
+
 		}
 		this->DecodeAlarmMaskAndRaiseAlarms();
 

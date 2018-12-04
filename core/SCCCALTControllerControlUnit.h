@@ -49,6 +49,7 @@ namespace driver {
 			//!restore method
 			bool unitRestoreToSnapshot(chaos::cu::control_manager::AbstractSharedDomainCache * const snapshot_cache);
 			// handler declaration
+			bool setBehaviour(const std::string &name,int32_t value,uint32_t size);
 			//end handler declaration
 			//chaos::cu::driver_manager::driver::BasicIODriverInterface *driver;
 			//::driver::misc::ChaosDatasetAttribute* Gib1;
@@ -57,6 +58,7 @@ namespace driver {
 			SCCCALTControllerControlUnit(const std::string& _control_unit_id,const std::string& _control_unit_param,const ControlUnitDriverList& _control_unit_drivers);
 			/*Base Destructor*/
 			~SCCCALTControllerControlUnit();
+		
 		};
 	}
 }
