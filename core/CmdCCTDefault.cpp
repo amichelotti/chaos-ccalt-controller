@@ -48,7 +48,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 	o_gib4_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB4_Voltages");
 	i_setPointBehaviour=getAttributeCache()->getRWPtr<int32_t>(DOMAIN_INPUT,"registered_setpoint_behaviour");
 
-	if ((i_setPointBehaviour!= NULL) && (*i_setPointBehaviour != 0))
+	//if ((i_setPointBehaviour!= NULL) && (*i_setPointBehaviour != 0))
 	{
 		char* gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
 		char* gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
@@ -67,6 +67,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 					
 					SCLDBG_ << "retrieving snapshot "<< gib1SetPoint << " from " << GIB1Name;
 					this->snap1=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
+					SCLDBG_ << "La snapshot vale " <<this->snap1.getCompliantJSONString();
 					
 				}
 			}
@@ -276,6 +277,7 @@ void own::CmdCCTDefault::acquireHandler() {
 		{
 			//snapshots exists.
 			SCLAPP_ << "ALEDEBUG: Controlling setpoint variations" ;
+			//controllare che le snapshot non siano vuote.
 			bool goneOutOfSet=false;
 			c_data::CDataWrapper *currentSnap=NULL;
 			c_data::CDWShrdPtr  *currentGibDataset=NULL;
@@ -302,14 +304,31 @@ void own::CmdCCTDefault::acquireHandler() {
 				{
 					sprintf(num,"%d",ch);
 					std::string key="CH" + std::string(num);
-					//double valueFromSnap= currentSnap->getDoubleValue(key);
+					c_data::CDWUniquePtr theOutput=currentSnap->getCSDataValue("output");
+					double valueFromSnap = theOutput->getDoubleValue(key);
 					double valueFromDataset= (*currentGibDataset)->getDoubleValue(key);
-					SCLAPP_ << "key: " << key << " snap value " << this->snap1.getCompliantJSONString();
-					//if ( std::fabs(valueFromDataset))
-
+					SCLAPP_ << "key: " << key << " snap value " << valueFromSnap;
+					if ( std::fabs(valueFromDataset - valueFromSnap) > voltageResolution)
+					{
+						goneOutOfSet=true;
+						break;
+					}
 				}
-
-
+				if (goneOutOfSet)
+				{
+					break;
+				}
+			}
+			if (goneOutOfSet)
+			{
+				if ((*i_setPointBehaviour)==1)
+				{
+					//raiseAlarm
+				}
+				else if ((*i_setPointBehaviour)==2)
+				{
+					//sendBatchCommand
+				}
 			}
 
 
