@@ -22,6 +22,7 @@ limitations under the License.
 #include <driver/CCALTController/core/ChaosCCALTControllerInterface.h>
 #include <chaos/cu_toolkit/control_manager/slow_command/SlowCommand.h>
 #include <driver/misc/core/ChaosController.h>
+#include <driver/misc/core/ChaosDatasetAttribute.h>
 #include <common/misc/GibControl/core/AbstractGibControl.h>
 #include <driver/misc/models/GibControl/core/GibControlConstants.h>
 

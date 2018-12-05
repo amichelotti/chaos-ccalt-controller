@@ -39,7 +39,7 @@ BATCH_COMMAND_CLOSE_DESCRIPTION()
 uint8_t own::CmdCCTDefault::implementedHandler(){
 	return      AbstractCCALTControllerCommand::implementedHandler()|chaos_batch::HandlerType::HT_Acquisition;
 }
-// empty set handler
+// set handler
 void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 	AbstractCCALTControllerCommand::setHandler(data);
 	o_gib1_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB1_Voltages");
@@ -56,7 +56,6 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 		char* gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
 		if ((gib1SetPoint!=NULL)&&(gib2SetPoint!=NULL)&&(gib3SetPoint!=NULL)&&(gib4SetPoint!=NULL) )
 		{
-
 			std::map<u_int64_t,std::string> retMap;
 			GIB1->getSnapshotsofCU(GIB1Name,retMap);
 			bool found=false;
@@ -65,7 +64,10 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib1SetPoint)
 				{
 					found=true;
-					this->gib1_setpoint=(*Iter).second;
+					
+					SCLDBG_ << "retrieving snapshot "<< gib1SetPoint << " from " << GIB1Name;
+					this->snap1=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
+					
 				}
 			}
 			if (!found)
@@ -81,7 +83,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib2SetPoint)
 				{
 					found=true;
-					this->gib2_setpoint=(*Iter).second;
+					this->snap2=GIB1->getSnapshotDataset(gib2SetPoint,GIB2Name);
 				}
 			}
 			if (!found)
@@ -97,7 +99,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib3SetPoint)
 				{
 					found=true;
-					this->gib3_setpoint=(*Iter).second;
+					this->snap3=GIB1->getSnapshotDataset(gib3SetPoint,GIB3Name);
 				}
 			}
 			if (!found)
@@ -113,7 +115,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib4SetPoint)
 				{
 					found=true;
-					this->gib4_setpoint=(*Iter).second;
+					this->snap4=GIB1->getSnapshotDataset(gib4SetPoint,GIB4Name);
 				}
 			}
 			if (!found)
@@ -143,10 +145,9 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 }
 // empty acquire handler
 void own::CmdCCTDefault::acquireHandler() {
-	
+
 	try
 	{
-		
 		//dpck_mds_ats o dpck_hr_ats o dpck_ats
 		//std::string inJson =GIB1->fetchJson(0);
 		std::pair<std::vector<int32_t>,std::vector<std::string>> retCuState=this->checkHealthState();
@@ -217,8 +218,11 @@ void own::CmdCCTDefault::acquireHandler() {
 		else
 		{
 			UpdateVoltagesFromDataset(GIB4Dataset,o_gib4_voltages);
-			this->CalculateState(GIB1Dataset,GIB2Dataset,GIB3Dataset,GIB4Dataset);
 		}
+		if (!failed)
+			this->CalculateState(GIB1Dataset,GIB2Dataset,GIB3Dataset,GIB4Dataset);
+		
+		failed=false;
 		chaos::common::data::CDWShrdPtr  CUAlarmsDataset;
 		CUAlarmsDataset=GIB1->getLiveChannel(GIB1Name,6);
 		if (CUAlarmsDataset == NULL)
@@ -268,10 +272,47 @@ void own::CmdCCTDefault::acquireHandler() {
 		{
 			this->CheckGibsAlarms(CUAlarmsDataset,o_alarms,4);
 		}
-		if ((i_setPointBehaviour != NULL) && (*i_setPointBehaviour != 0))
+		if ((i_setPointBehaviour != NULL) && (*i_setPointBehaviour != 0) && (!failed))
 		{
 			//snapshots exists.
 			SCLAPP_ << "ALEDEBUG: Controlling setpoint variations" ;
+			bool goneOutOfSet=false;
+			c_data::CDataWrapper *currentSnap=NULL;
+			c_data::CDWShrdPtr  *currentGibDataset=NULL;
+			std::string currentGIB;
+			for (int i=1; i <=4;i++)
+			{
+				switch (i)
+				{
+					case 1:  currentSnap=&(this->snap1); currentGibDataset=&(this->GIB1Dataset);currentGIB=this->GIB1Name; break;
+					case 2:  currentSnap=&(this->snap2); currentGibDataset=&(this->GIB2Dataset);currentGIB=this->GIB2Name; break;
+					case 3:  currentSnap=&(this->snap3); currentGibDataset=&(this->GIB3Dataset);currentGIB=this->GIB3Name; break;
+					case 4:  currentSnap=&(this->snap4); currentGibDataset=&(this->GIB4Dataset);currentGIB=this->GIB4Name; break;
+					default:  break;
+				}
+				int numOfChannels=(*currentGibDataset)->getInt32Value("numberOfChannels");
+				std::string  completeAttrName=currentGIB+"/voltage_channel_resolution";
+				//::driver::misc::ChaosDatasetAttribute* voltResAttribute = new ::driver::misc::ChaosDatasetAttribute(completeAttrName);
+				double voltageResolution=0.5;
+				//voltResAttribute;
+				//voltResAttribute->get<double>(voltageResolution);
+				//delete (voltResAttribute);
+				char num[16];
+				for (int ch=0; ch< numOfChannels; ch++)
+				{
+					sprintf(num,"%d",ch);
+					std::string key="CH" + std::string(num);
+					//double valueFromSnap= currentSnap->getDoubleValue(key);
+					double valueFromDataset= (*currentGibDataset)->getDoubleValue(key);
+					SCLAPP_ << "key: " << key << " snap value " << this->snap1.getCompliantJSONString();
+					//if ( std::fabs(valueFromDataset))
+
+				}
+
+
+			}
+
+
 
 
 		}
