@@ -61,7 +61,11 @@ bitmask |= (1 << bitToRaise)
 			CCALTCONTROLLER_GIB1_setpointnotreached = 0x10,
 			CCALTCONTROLLER_GIB2_setpointnotreached = 0x20,
 			CCALTCONTROLLER_GIB3_setpointnotreached = 0x40,
-			CCALTCONTROLLER_GIB4_setpointnotreached = 0x80			
+			CCALTCONTROLLER_GIB4_setpointnotreached = 0x80,
+			CCALTCONTROLLER_GIB1_channeloutofset = 0x100,
+			CCALTCONTROLLER_GIB2_channeloutofset = 0x200,
+			CCALTCONTROLLER_GIB3_channeloutofset = 0x400,
+			CCALTCONTROLLER_GIB4_channeloutofset = 0x800			
 		} CCALTAlarms;
 		class AbstractCCALTController {
 		  public:

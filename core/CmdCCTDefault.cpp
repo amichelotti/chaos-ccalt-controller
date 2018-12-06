@@ -64,11 +64,7 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib1SetPoint)
 				{
 					found=true;
-					
-					SCLDBG_ << "retrieving snapshot "<< gib1SetPoint << " from " << GIB1Name;
 					this->snap1=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
-					SCLDBG_ << "La snapshot vale " <<this->snap1.getCompliantJSONString();
-					
 				}
 			}
 			if (!found)
@@ -273,9 +269,12 @@ void own::CmdCCTDefault::acquireHandler() {
 		{
 			this->CheckGibsAlarms(CUAlarmsDataset,o_alarms,4);
 		}
+		this->DecodeAlarmMaskAndRaiseAlarms();
+
 		if ((i_setPointBehaviour != NULL) && (*i_setPointBehaviour != 0) && (!failed))
 		{
-			//snapshots exists.
+			//snapshots exists. POTREBBE NON ESSERE NECESSARIO. SE ho OUTOFSET lancio il restore DA VEDERE MEGLIO
+			//OPPURE DEFINIRE DIVERSAMENTE LA CONDIZIONE DI RESTORE AUTOMATICO
 			SCLAPP_ << "ALEDEBUG: Controlling setpoint variations" ;
 			//controllare che le snapshot non siano vuote.
 			bool goneOutOfSet=false;
@@ -324,7 +323,7 @@ void own::CmdCCTDefault::acquireHandler() {
 			{
 				if ((*i_setPointBehaviour)==1)
 				{
-					setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+					//setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
 				}
 				else if ((*i_setPointBehaviour)==2)
 				{
@@ -335,15 +334,14 @@ void own::CmdCCTDefault::acquireHandler() {
 			}
 			else
 			{
-				setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+				//setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 			}
 
 
 
 
 		}
-		this->DecodeAlarmMaskAndRaiseAlarms();
-
+		
 
 	}
 	catch (int  e)
@@ -439,6 +437,29 @@ bool own::CmdCCTDefault::CheckGibsAlarms(chaos::common::data::CDWShrdPtr fetched
 				}
 			}
 		}
+		if ((*i) == "channel_out_of_set")
+		{
+			if (fetchedAlarm->getInt32Value(*i) > 0)
+			{
+				switch( gibNum)
+				{
+					case 1 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset); break;
+					case 2 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset); break;
+					case 3 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset); break;
+					case 4 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset); break;
+				}
+			}
+			else
+			{
+				switch( gibNum)
+				{
+					case 1 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset); break;
+					case 2 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset); break;
+					case 3 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset); break;
+					case 4 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset); break;
+				}
+			}
+		}
 
 	}
 	return true;
@@ -470,6 +491,20 @@ void own::CmdCCTDefault::DecodeAlarmMaskAndRaiseAlarms()
 	else
 	{
 		setStateVariableSeverity(StateVariableTypeAlarmDEV,"setpoint_not_reached",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	}
+
+	if (CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset) 
+	   )
+	{
+			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
+			setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+	}
+	else
+	{
+		setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 	}
 
 
