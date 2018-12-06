@@ -307,9 +307,10 @@ void own::CmdCCTDefault::acquireHandler() {
 					c_data::CDWUniquePtr theOutput=currentSnap->getCSDataValue("output");
 					double valueFromSnap = theOutput->getDoubleValue(key);
 					double valueFromDataset= (*currentGibDataset)->getDoubleValue(key);
-					SCLAPP_ << "key: " << key << " snap value " << valueFromSnap;
+					
 					if ( std::fabs(valueFromDataset - valueFromSnap) > voltageResolution)
 					{
+						SCLAPP_ << "key: " << key << " snap value " << valueFromSnap << " current " << valueFromDataset << " gib "<< i;
 						goneOutOfSet=true;
 						break;
 					}
@@ -323,12 +324,18 @@ void own::CmdCCTDefault::acquireHandler() {
 			{
 				if ((*i_setPointBehaviour)==1)
 				{
-					//raiseAlarm
+					setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
 				}
 				else if ((*i_setPointBehaviour)==2)
 				{
 					//sendBatchCommand
+					//submitBatchCommand()
+					//AbstractCCALTControllerCommand::batchGoToSetPoint();
 				}
+			}
+			else
+			{
+				setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 			}
 
 
@@ -458,11 +465,11 @@ void own::CmdCCTDefault::DecodeAlarmMaskAndRaiseAlarms()
 	   )
 	{
 			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
-			setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+			setStateVariableSeverity(StateVariableTypeAlarmDEV,"setpoint_not_reached",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
 	}
 	else
 	{
-		setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+		setStateVariableSeverity(StateVariableTypeAlarmDEV,"setpoint_not_reached",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 	}
 
 

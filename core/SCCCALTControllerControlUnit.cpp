@@ -174,6 +174,8 @@ void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineActionAn
 		"raised when at least one CU is not in start state");
 	addStateVariable(StateVariableTypeAlarmDEV,"out_of_set",
 		"raised when at least one channel of one gib moved from the setpoint");
+	addStateVariable(StateVariableTypeAlarmDEV,"setpoint_not_reached",
+		"raised when at least one gib failed to go to setpoint");
 }
 void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineCustomAttribute() {
 }
