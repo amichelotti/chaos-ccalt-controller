@@ -65,7 +65,11 @@ bitmask |= (1 << bitToRaise)
 			CCALTCONTROLLER_GIB1_channeloutofset = 0x100,
 			CCALTCONTROLLER_GIB2_channeloutofset = 0x200,
 			CCALTCONTROLLER_GIB3_channeloutofset = 0x400,
-			CCALTCONTROLLER_GIB4_channeloutofset = 0x800			
+			CCALTCONTROLLER_GIB4_channeloutofset = 0x800,
+			CCALTCONTROLLER_GIB1_wrong_driver_status = 0x1000,
+			CCALTCONTROLLER_GIB2_wrong_driver_status = 0x2000,
+			CCALTCONTROLLER_GIB3_wrong_driver_status = 0x4000,
+			CCALTCONTROLLER_GIB4_wrong_driver_status = 0x8000			
 		} CCALTAlarms;
 		class AbstractCCALTController {
 		  public:
