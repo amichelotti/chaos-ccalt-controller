@@ -460,6 +460,29 @@ bool own::CmdCCTDefault::CheckGibsAlarms(chaos::common::data::CDWShrdPtr fetched
 				}
 			}
 		}
+		if ((*i) == "wrong_driver_status_error")
+		{
+			if (fetchedAlarm->getInt32Value(*i) > 0)
+			{
+				switch( gibNum)
+				{
+					case 1 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status); break;
+					case 2 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status); break;
+					case 3 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status); break;
+					case 4 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status); break;
+				}
+			}
+			else
+			{
+				switch( gibNum)
+				{
+					case 1 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status); break;
+					case 2 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status); break;
+					case 3 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status); break;
+					case 4 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status); break;
+				}
+			}
+		}
 
 	}
 	return true;
@@ -505,6 +528,20 @@ void own::CmdCCTDefault::DecodeAlarmMaskAndRaiseAlarms()
 	else
 	{
 		setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	}
+	//wrong driver status
+	if (CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status) 
+	   )
+	{
+			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
+			setStateVariableSeverity(StateVariableTypeAlarmDEV,"driver_in_wrong_status",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+	}
+	else
+	{
+		setStateVariableSeverity(StateVariableTypeAlarmDEV,"driver_in_wrong_status",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 	}
 
 

@@ -176,6 +176,10 @@ void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineActionAn
 		"raised when at least one channel of one gib moved from the setpoint");
 	addStateVariable(StateVariableTypeAlarmDEV,"setpoint_not_reached",
 		"raised when at least one gib failed to go to setpoint");
+   addStateVariable(StateVariableTypeAlarmDEV,"driver_in_wrong_status",
+		"raised when at least one gib have a driver in wrong and uncoherent status");
+
+		
 }
 void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineCustomAttribute() {
 }
