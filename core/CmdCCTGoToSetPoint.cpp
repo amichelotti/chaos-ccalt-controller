@@ -43,91 +43,11 @@ uint8_t own::CmdCCTGoToSetPoint::implementedHandler(){
 void own::CmdCCTGoToSetPoint::setHandler(c_data::CDataWrapper *data) {
 	AbstractCCALTControllerCommand::setHandler(data);
 	SCLAPP_ << "Set Handler GoToSetPoint "; 
-	setStateVariableSeverity(StateVariableTypeAlarmCU,"driver_command_error",chaos::common::alarm::MultiSeverityAlarmLevelClear);
-	setStateVariableSeverity(StateVariableTypeAlarmCU,"bad_command_parameter",chaos::common::alarm::MultiSeverityAlarmLevelClear);
-	setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelClear);
-	int err=0;
-	
-	gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
-	if ((gib1SetPoint==NULL)||(gib2SetPoint==NULL)||(gib3SetPoint==NULL)||(gib4SetPoint==NULL) )
+	bool ret= AbstractCCALTControllerCommand::batchGoToSetPoint();
+	if (ret)
 	{
-		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelWarning);
-		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,"no name for snapshot in configuration" );
-		setWorkState(false);
-		BC_FAULT_RUNNING_PROPERTY
-		
-		return;
+		BC_NORMAL_RUNNING_PROPERTY;
 	}
-	std::map<u_int64_t,std::string> retMap;
-	GIB1->getSnapshotsofCU(GIB1Name,retMap);
-	bool found=false;
-	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
-	{
-		if ((*Iter).second == gib1SetPoint)
-		{
-			//GIB1->init()
-			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
-			found=true;
-
-		}
-	}
-	if (!found) {err++;}
-	retMap.clear();
-	GIB2->getSnapshotsofCU(GIB2Name,retMap);
-	found=false;
-	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
-	{
-		if ((*Iter).second == gib2SetPoint)
-		{
-			//GIB1->init()
-			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
-			found=true;
-
-		}
-	}
-	if (!found) {err++;}
-	retMap.clear();
-	GIB3->getSnapshotsofCU(GIB3Name,retMap);
-	found=false;
-	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
-	{
-		if ((*Iter).second == gib3SetPoint)
-		{
-			//GIB1->init()
-			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
-			found=true;
-
-		}
-	}
-	if (!found) {err++;}
-	retMap.clear();
-	GIB4->getSnapshotsofCU(GIB4Name,retMap);
-	found=false;
-	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
-	{
-		if ((*Iter).second == gib3SetPoint)
-		{
-			//GIB1->init()
-			SCLAPP_ << "Should restore snapshot "<< (*Iter).second;
-			found=true;
-
-		}
-	}
-	if (!found) {err++;}
-
-	if (err != 0)
-	{
-		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," command GoToSetPoint not acknowledged");
-		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
-		setWorkState(false);
-		BC_FAULT_RUNNING_PROPERTY
-		return;
-	}
-	setWorkState(true);
-	BC_NORMAL_RUNNING_PROPERTY
 }
 // empty acquire handler
 void own::CmdCCTGoToSetPoint::acquireHandler() {
