@@ -39,25 +39,112 @@ BATCH_COMMAND_CLOSE_DESCRIPTION()
 uint8_t own::CmdCCTDefault::implementedHandler(){
 	return      AbstractCCALTControllerCommand::implementedHandler()|chaos_batch::HandlerType::HT_Acquisition;
 }
-// empty set handler
+// set handler
 void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 	AbstractCCALTControllerCommand::setHandler(data);
 	o_gib1_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB1_Voltages");
 	o_gib2_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB2_Voltages");
 	o_gib3_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB3_Voltages");
 	o_gib4_voltages=getAttributeCache()->getRWPtr<double>(DOMAIN_OUTPUT, "GIB4_Voltages");
+	i_setPointBehaviour=getAttributeCache()->getRWPtr<int32_t>(DOMAIN_INPUT,"registered_setpoint_behaviour");
+
+	//if ((i_setPointBehaviour!= NULL) && (*i_setPointBehaviour != 0))
+	{
+		char* gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
+		char* gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
+		char* gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB3");
+		char* gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
+		if ((gib1SetPoint!=NULL)&&(gib2SetPoint!=NULL)&&(gib3SetPoint!=NULL)&&(gib4SetPoint!=NULL) )
+		{
+			std::map<u_int64_t,std::string> retMap;
+			GIB1->getSnapshotsofCU(GIB1Name,retMap);
+			bool found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib1SetPoint)
+				{
+					found=true;
+					this->snap1=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib1SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB2->getSnapshotsofCU(GIB2Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib2SetPoint)
+				{
+					found=true;
+					this->snap2=GIB1->getSnapshotDataset(gib2SetPoint,GIB2Name);
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib2SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB3->getSnapshotsofCU(GIB3Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib3SetPoint)
+				{
+					found=true;
+					this->snap3=GIB1->getSnapshotDataset(gib3SetPoint,GIB3Name);
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib3SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+			GIB4->getSnapshotsofCU(GIB4Name,retMap);
+			found=false;
+			for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+			{
+				if ((*Iter).second == gib4SetPoint)
+				{
+					found=true;
+					this->snap4=GIB1->getSnapshotDataset(gib4SetPoint,GIB4Name);
+				}
+			}
+			if (!found)
+			{
+				std::string errStr=" No snapshot of name" + std::string(gib4SetPoint);
+				metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+				*i_setPointBehaviour=0;
+			}
+		}
+		else
+		{
+			std::string errStr=" Not enough setpoint configured. Control over setpoint cannot be activated" + std::string(gib4SetPoint);
+			metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning,errStr);
+			*i_setPointBehaviour=0;
+		}
+	}
+
+
+
+
+
 	clearFeatures(chaos_batch::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT);
 	setBusyFlag(false);
 	
-	SCLAPP_ << "Set Handler Default " ; 
+	SCLAPP_ << "Set Handler Default " ;
 	BC_NORMAL_RUNNING_PROPERTY
 }
 // empty acquire handler
 void own::CmdCCTDefault::acquireHandler() {
-	
+
 	try
 	{
-		//SCLDBG_ << "ALEDEBUG STATUS GIB1 " << GIB1->getJsonState();
 		//dpck_mds_ats o dpck_hr_ats o dpck_ats
 		//std::string inJson =GIB1->fetchJson(0);
 		std::pair<std::vector<int32_t>,std::vector<std::string>> retCuState=this->checkHealthState();
@@ -128,8 +215,11 @@ void own::CmdCCTDefault::acquireHandler() {
 		else
 		{
 			UpdateVoltagesFromDataset(GIB4Dataset,o_gib4_voltages);
-			this->CalculateState(GIB1Dataset,GIB2Dataset,GIB3Dataset,GIB4Dataset);
 		}
+		if (!failed)
+			this->CalculateState(GIB1Dataset,GIB2Dataset,GIB3Dataset,GIB4Dataset);
+		
+		failed=false;
 		chaos::common::data::CDWShrdPtr  CUAlarmsDataset;
 		CUAlarmsDataset=GIB1->getLiveChannel(GIB1Name,6);
 		if (CUAlarmsDataset == NULL)
@@ -181,6 +271,77 @@ void own::CmdCCTDefault::acquireHandler() {
 		}
 		this->DecodeAlarmMaskAndRaiseAlarms();
 
+		if ((i_setPointBehaviour != NULL) && (*i_setPointBehaviour != 0) && (!failed))
+		{
+			//snapshots exists. POTREBBE NON ESSERE NECESSARIO. SE ho OUTOFSET lancio il restore DA VEDERE MEGLIO
+			//OPPURE DEFINIRE DIVERSAMENTE LA CONDIZIONE DI RESTORE AUTOMATICO
+			SCLAPP_ << "ALEDEBUG: Controlling setpoint variations" ;
+			//controllare che le snapshot non siano vuote.
+			bool goneOutOfSet=false;
+			c_data::CDataWrapper *currentSnap=NULL;
+			c_data::CDWShrdPtr  *currentGibDataset=NULL;
+			std::string currentGIB;
+			for (int i=1; i <=4;i++)
+			{
+				switch (i)
+				{
+					case 1:  currentSnap=&(this->snap1); currentGibDataset=&(this->GIB1Dataset);currentGIB=this->GIB1Name; break;
+					case 2:  currentSnap=&(this->snap2); currentGibDataset=&(this->GIB2Dataset);currentGIB=this->GIB2Name; break;
+					case 3:  currentSnap=&(this->snap3); currentGibDataset=&(this->GIB3Dataset);currentGIB=this->GIB3Name; break;
+					case 4:  currentSnap=&(this->snap4); currentGibDataset=&(this->GIB4Dataset);currentGIB=this->GIB4Name; break;
+					default:  break;
+				}
+				int numOfChannels=(*currentGibDataset)->getInt32Value("numberOfChannels");
+				std::string  completeAttrName=currentGIB+"/voltage_channel_resolution";
+				//::driver::misc::ChaosDatasetAttribute* voltResAttribute = new ::driver::misc::ChaosDatasetAttribute(completeAttrName);
+				double voltageResolution=0.5;
+				//voltResAttribute;
+				//voltResAttribute->get<double>(voltageResolution);
+				//delete (voltResAttribute);
+				char num[16];
+				for (int ch=0; ch< numOfChannels; ch++)
+				{
+					sprintf(num,"%d",ch);
+					std::string key="CH" + std::string(num);
+					c_data::CDWUniquePtr theOutput=currentSnap->getCSDataValue("output");
+					double valueFromSnap = theOutput->getDoubleValue(key);
+					double valueFromDataset= (*currentGibDataset)->getDoubleValue(key);
+					
+					if ( std::fabs(valueFromDataset - valueFromSnap) > voltageResolution)
+					{
+						SCLAPP_ << "key: " << key << " snap value " << valueFromSnap << " current " << valueFromDataset << " gib "<< i;
+						goneOutOfSet=true;
+						break;
+					}
+				}
+				if (goneOutOfSet)
+				{
+					break;
+				}
+			}
+			if (goneOutOfSet)
+			{
+				if ((*i_setPointBehaviour)==1)
+				{
+					//setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+				}
+				else if ((*i_setPointBehaviour)==2)
+				{
+					//sendBatchCommand
+					//submitBatchCommand()
+					//AbstractCCALTControllerCommand::batchGoToSetPoint();
+				}
+			}
+			else
+			{
+				//setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+			}
+
+
+
+
+		}
+		
 
 	}
 	catch (int  e)
@@ -276,6 +437,52 @@ bool own::CmdCCTDefault::CheckGibsAlarms(chaos::common::data::CDWShrdPtr fetched
 				}
 			}
 		}
+		if ((*i) == "channel_out_of_set")
+		{
+			if (fetchedAlarm->getInt32Value(*i) > 0)
+			{
+				switch( gibNum)
+				{
+					case 1 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset); break;
+					case 2 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset); break;
+					case 3 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset); break;
+					case 4 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset); break;
+				}
+			}
+			else
+			{
+				switch( gibNum)
+				{
+					case 1 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset); break;
+					case 2 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset); break;
+					case 3 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset); break;
+					case 4 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset); break;
+				}
+			}
+		}
+		if ((*i) == "wrong_driver_status_error")
+		{
+			if (fetchedAlarm->getInt32Value(*i) > 0)
+			{
+				switch( gibNum)
+				{
+					case 1 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status); break;
+					case 2 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status); break;
+					case 3 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status); break;
+					case 4 : UPMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status); break;
+				}
+			}
+			else
+			{
+				switch( gibNum)
+				{
+					case 1 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status); break;
+					case 2 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status); break;
+					case 3 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status); break;
+					case 4 : DOWNMASK(*alarmBitMask,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status); break;
+				}
+			}
+		}
 
 	}
 	return true;
@@ -302,11 +509,39 @@ void own::CmdCCTDefault::DecodeAlarmMaskAndRaiseAlarms()
 	   )
 	{
 			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
+			setStateVariableSeverity(StateVariableTypeAlarmDEV,"setpoint_not_reached",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+	}
+	else
+	{
+		setStateVariableSeverity(StateVariableTypeAlarmDEV,"setpoint_not_reached",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	}
+
+	if (CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_channeloutofset) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_channeloutofset) 
+	   )
+	{
+			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
 			setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
 	}
 	else
 	{
 		setStateVariableSeverity(StateVariableTypeAlarmDEV,"out_of_set",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	}
+	//wrong driver status
+	if (CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB1_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB2_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB3_wrong_driver_status) ||
+		CHECKMASK(*o_alarms,::common::ccaltcontroller::CCALTCONTROLLER_GIB4_wrong_driver_status) 
+	   )
+	{
+			//metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError," cannot retrieve alarms from GIB4");
+			setStateVariableSeverity(StateVariableTypeAlarmDEV,"driver_in_wrong_status",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+	}
+	else
+	{
+		setStateVariableSeverity(StateVariableTypeAlarmDEV,"driver_in_wrong_status",chaos::common::alarm::MultiSeverityAlarmLevelClear);
 	}
 
 

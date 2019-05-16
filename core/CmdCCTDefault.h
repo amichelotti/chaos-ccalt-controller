@@ -45,6 +45,12 @@ namespace driver {
 			double* o_gib2_voltages;
 			double* o_gib3_voltages;
 			double* o_gib4_voltages;
+			int32_t *i_setPointBehaviour;
+			c_data::CDataWrapper snap1;
+			c_data::CDataWrapper snap2;
+			c_data::CDataWrapper snap3;
+			c_data::CDataWrapper snap4;
+			
 			chaos::common::data::CDWShrdPtr  GIB1Dataset;
 			chaos::common::data::CDWShrdPtr  GIB2Dataset;
 			chaos::common::data::CDWShrdPtr  GIB3Dataset;

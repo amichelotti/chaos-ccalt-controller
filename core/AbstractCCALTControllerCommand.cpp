@@ -24,13 +24,28 @@ limitations under the License.
 using namespace driver::ccaltcontroller;
 namespace chaos_batch = chaos::common::batch_command;
 using namespace chaos::cu::control_manager;
-AbstractCCALTControllerCommand::AbstractCCALTControllerCommand() {
+AbstractCCALTControllerCommand::AbstractCCALTControllerCommand():GIB1(NULL),GIB2(NULL),GIB3(NULL),GIB4(NULL) {
 	ccaltcontroller_drv = NULL;
+	GIB1= new ::driver::misc::ChaosController("CCALT/GIB/GIB1");
+	GIB2= new ::driver::misc::ChaosController("CCALT/GIB/GIB2");
+	GIB3= new ::driver::misc::ChaosController("CCALT/GIB/GIB3");
+	GIB4= new ::driver::misc::ChaosController("CCALT/GIB/GIB4");
 }
 AbstractCCALTControllerCommand::~AbstractCCALTControllerCommand() {
 	if(ccaltcontroller_drv)
 		delete(ccaltcontroller_drv);
 	ccaltcontroller_drv = NULL;
+	if (GIB1)
+		delete(GIB1);
+	if (GIB2)
+		delete(GIB2);
+	if (GIB3)
+		delete(GIB3);
+	if (GIB4)
+		delete(GIB4);
+	
+	GIB1=GIB2=GIB3=GIB4=NULL;
+	
 }
 void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 	CMDCUDBG_ << "loading pointer for output channel"; 
@@ -46,10 +61,7 @@ void AbstractCCALTControllerCommand::setHandler(c_data::CDataWrapper *data) {
 			ccaltcontroller_drv = new chaos::driver::ccaltcontroller::ChaosCCALTControllerInterface(ccaltcontroller_accessor);
 		}
 	}
-	GIB1= new ::driver::misc::ChaosController("CCALT/GIB/GIB1");
-	GIB2= new ::driver::misc::ChaosController("CCALT/GIB/GIB2");
-	GIB3= new ::driver::misc::ChaosController("CCALT/GIB/GIB3");
-	GIB4= new ::driver::misc::ChaosController("CCALT/GIB/GIB4");
+	
 }
 // return the implemented handler
 uint8_t AbstractCCALTControllerCommand::implementedHandler() {
@@ -105,6 +117,7 @@ bool AbstractCCALTControllerCommand::CalculateState(chaos::common::data::CDWShrd
 	}
 	
 	strcpy(o_status_desc,description.c_str());
+	return true;
 }
 
 std::pair<std::vector<int32_t>,std::vector<std::string>> AbstractCCALTControllerCommand::checkHealthState() {
@@ -161,3 +174,85 @@ std::pair<std::vector<int32_t>,std::vector<std::string>> AbstractCCALTController
 	return ReturnObject;
 }
 
+bool AbstractCCALTControllerCommand::batchGoToSetPoint() 
+{
+	setStateVariableSeverity(StateVariableTypeAlarmCU,"driver_command_error",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	setStateVariableSeverity(StateVariableTypeAlarmCU,"bad_command_parameter",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelClear);
+	int err=0;
+	gib1SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB1");
+	gib2SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB2");
+	gib3SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB3");
+	gib4SetPoint = getAttributeCache()->getRWPtr<char>(DOMAIN_INPUT, "setpointNameGIB4");
+	if ((gib1SetPoint==NULL)||(gib2SetPoint==NULL)||(gib3SetPoint==NULL)||(gib4SetPoint==NULL) )
+	{
+		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelWarning);
+		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,"no name for snapshot in configuration" );
+		setWorkState(false);
+		BC_FAULT_RUNNING_PROPERTY
+		return false;
+	}
+	std::map<u_int64_t,std::string> retMap;
+	GIB1->getSnapshotsofCU(GIB1Name,retMap);
+	bool found=false;
+	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+	{
+		if ((*Iter).second == gib1SetPoint)
+		{
+			GIB1->restoreDeviceToTag(gib1SetPoint);
+			CMDCUINFO_ << "Should restore snapshot "<< (*Iter).second;
+			found=true;
+		}
+	}
+	if (!found) {err++;}
+	retMap.clear();
+	GIB2->getSnapshotsofCU(GIB2Name,retMap);
+	found=false;
+	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+	{
+		if ((*Iter).second == gib2SetPoint)
+		{
+			GIB2->restoreDeviceToTag(gib2SetPoint);
+			CMDCUINFO_ << "Should restore snapshot "<< (*Iter).second;
+			found=true;
+		}
+	}
+	if (!found) {err++;}
+	retMap.clear();
+	GIB3->getSnapshotsofCU(GIB3Name,retMap);
+	found=false;
+	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+	{
+		if ((*Iter).second == gib3SetPoint)
+		{
+			GIB3->restoreDeviceToTag(gib3SetPoint);
+			CMDCUINFO_ << "Should restore snapshot "<< (*Iter).second;
+			found=true;
+		}
+	}
+	if (!found) {err++;}
+	retMap.clear();
+	GIB4->getSnapshotsofCU(GIB4Name,retMap);
+	found=false;
+	for (std::map<u_int64_t,std::string>::iterator Iter=retMap.begin(); Iter != retMap.end(); Iter++)
+	{
+		if ((*Iter).second == gib4SetPoint)
+		{
+			GIB1->restoreDeviceToTag(gib4SetPoint);
+			CMDCUINFO_ << "Should restore snapshot "<< (*Iter).second;
+			found=true;
+		}
+	}
+	if (!found) {err++;}
+
+	if (err != 0)
+	{
+		std::string errorString = " command GoToSetPoint not acknowledged " ;
+		metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,errorString);
+		setStateVariableSeverity(StateVariableTypeAlarmCU,"MissingSetPointSnapshot",chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+		setWorkState(false);
+		BC_FAULT_RUNNING_PROPERTY
+		return false;
+	}
+	return true;
+}

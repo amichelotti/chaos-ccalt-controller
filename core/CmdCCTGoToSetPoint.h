@@ -35,10 +35,7 @@ namespace driver {
 			void ccHandler();
 			//manage the timeout 
 			bool timeoutHandler();
-			char		*gib1SetPoint;
-			char		*gib2SetPoint;
-			char		*gib3SetPoint;
-			char		*gib4SetPoint;
+			
 		};
 	}
 }

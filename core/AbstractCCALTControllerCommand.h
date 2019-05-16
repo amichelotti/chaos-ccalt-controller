@@ -22,6 +22,7 @@ limitations under the License.
 #include <driver/CCALTController/core/ChaosCCALTControllerInterface.h>
 #include <chaos/cu_toolkit/control_manager/slow_command/SlowCommand.h>
 #include <driver/misc/core/ChaosController.h>
+#include <driver/misc/core/ChaosDatasetAttribute.h>
 #include <common/misc/GibControl/core/AbstractGibControl.h>
 #include <driver/misc/models/GibControl/core/GibControlConstants.h>
 
@@ -53,10 +54,15 @@ namespace driver {
 			std::string GIB2Name="CCALT/GIB/GIB2";
 			std::string GIB3Name="CCALT/GIB/GIB3";
 			std::string GIB4Name="CCALT/GIB/GIB4";
+			char		*gib1SetPoint;
+			char		*gib2SetPoint;
+			char		*gib3SetPoint;
+			char		*gib4SetPoint;
 			bool CalculateState(chaos::common::data::CDWShrdPtr Gib1,chaos::common::data::CDWShrdPtr Gib2,
 				chaos::common::data::CDWShrdPtr Gib3,chaos::common::data::CDWShrdPtr Gib4);
 			
 			std::pair<std::vector<int32_t>,std::vector<std::string>> checkHealthState() ;
+			bool batchGoToSetPoint();
 			const u_int32_t DEFAULT_ELAPSED_TIME_HEALTH = 10;
 
 		};// AbstractCCALTControllerCommand
