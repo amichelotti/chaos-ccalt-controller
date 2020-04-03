@@ -18,7 +18,6 @@ limitations under the License.
 */
 #include "ChaosCCALTControllerDD.h"
 #include <string>
-#include <boost/regex.hpp>
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
 // including interface
 #include "driver/CCALTController/core/ChaosCCALTControllerInterface.h"
