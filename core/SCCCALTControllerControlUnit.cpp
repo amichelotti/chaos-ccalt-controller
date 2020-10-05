@@ -20,7 +20,6 @@ limitations under the License.
 //#include <driver/misc/core/ChaosDatasetAttributeSinchronizer.h>
 //#include <driver/misc/core/SCDataSync.h>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <common/debug/core/debug.h>
 #include "CmdCCTDefault.h"
 #include "CmdCCTPowerOn.h"
