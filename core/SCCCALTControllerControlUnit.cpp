@@ -20,7 +20,6 @@ limitations under the License.
 //#include <driver/misc/core/ChaosDatasetAttributeSinchronizer.h>
 //#include <driver/misc/core/SCDataSync.h>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <common/debug/core/debug.h>
 #include "CmdCCTDefault.h"
 #include "CmdCCTPowerOn.h"
@@ -45,8 +44,7 @@ PUBLISHABLE_CONTROL_UNIT_IMPLEMENTATION(::driver::ccaltcontroller::SCCCALTContro
 			const string &_control_unit_param,const ControlUnitDriverList &_control_unit_drivers)
 		/*	: ::driver::misc::SCDataSync*/
 :  chaos::cu::control_manager::SCAbstractControlUnit(_control_unit_id,
-			 _control_unit_param, _control_unit_drivers){
-	ccaltcontroller_drv = NULL;
+			 _control_unit_param, _control_unit_drivers),ccaltcontroller_drv(NULL){
 
 	/*driver=new ::driver::misc::remoteGroupAccessInterface(getAccessoInstanceByIndex(0));
      if((driver == NULL) || (driver->connect()!=0)){
