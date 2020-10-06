@@ -31,7 +31,6 @@ namespace driver {
 		class SCCCALTControllerControlUnit: public chaos::cu::control_manager::SCAbstractControlUnit {
 		//class SCCCALTControllerControlUnit: public ::driver::misc::SCDataSync {
 			PUBLISHABLE_CONTROL_UNIT_INTERFACE(SCCCALTControllerControlUnit)
-			std::string device_hw;
 			chaos::driver::ccaltcontroller::ChaosCCALTControllerInterface *ccaltcontroller_drv;
 			bool waitOnCommandID(uint64_t command_id);
 		protected:
