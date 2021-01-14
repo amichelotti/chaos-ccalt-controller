@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "ChaosCCALTControllerInterface.h"
+#include "ChaosCCALTControllerDD.h"
 using namespace chaos::driver::ccaltcontroller;
 #define PREPARE_OP_RET_INT_TIMEOUT(op,tim) \
 ccaltcontroller_oparams_t ret;\
@@ -58,14 +59,18 @@ accessor->send(&message);\
 return ret.result;
 
 int ChaosCCALTControllerInterface::PowerOn(int32_t on_state) {
-	WRITE_OP_INT32_T_TIM(OP_POWERON,on_state,0);
+	//WRITE_OP_INT32_T_TIM(OP_POWERON,on_state,0);
+	return impl->PowerOn(on_state);
 } 
 int ChaosCCALTControllerInterface::SetVoltagesOnGib(std::string gibUID,int32_t channel,double voltage) {
-	WRITE_OP_STRING_INT32_T_DOUBLE_TIM(OP_SETVOLTAGESONGIB,gibUID,channel,voltage,0);
+	//WRITE_OP_STRING_INT32_T_DOUBLE_TIM(OP_SETVOLTAGESONGIB,gibUID,channel,voltage,0);
+	return impl->SetVoltagesOnGib( gibUID,channel,voltage); 
 } 
 int ChaosCCALTControllerInterface::SetPulseOnGib(std::string gibUID,int32_t channel,int32_t amplitude,int32_t width,int32_t state) {
-	WRITE_OP_STRING_INT32_T_INT32_T_INT32_T_INT32_T_TIM(OP_SETPULSEONGIB,gibUID,channel,amplitude,width,state,0);
+	//WRITE_OP_STRING_INT32_T_INT32_T_INT32_T_INT32_T_TIM(OP_SETPULSEONGIB,gibUID,channel,amplitude,width,state,0);
+	return impl->SetPulseOnGib(gibUID, channel, amplitude, width, state);
 } 
 int ChaosCCALTControllerInterface::GoToSetPoint() {
-	WRITE_OP_TIM(OP_GOTOSETPOINT,0);
+	//WRITE_OP_TIM(OP_GOTOSETPOINT,0);
+	return impl->GoToSetPoint();
 } 
