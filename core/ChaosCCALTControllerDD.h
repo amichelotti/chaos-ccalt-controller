@@ -26,7 +26,8 @@ namespace chaos {
 	namespace driver {
 		namespace ccaltcontroller {
 			    /*         driver definition            */ 
-			class ChaosCCALTControllerDD: ADD_CU_DRIVER_PLUGIN_SUPERCLASS{
+				//gibccaltDrvDD
+			class ChaosCCALTControllerDD: ADD_CU_DRIVER_PLUGIN_SUPERCLASS,public ::common::ccaltcontroller::AbstractCCALTController{
 			protected: 
 				::common::ccaltcontroller::AbstractCCALTController* devicedriver;
 			public: 
