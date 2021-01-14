@@ -29,6 +29,7 @@ namespace chaos {
 	namespace driver {
 		#define MAX_STR_SIZE 256
 		namespace ccaltcontroller {
+			class ChaosCCALTControllerDD;
 			typedef enum {
 				OP_POWERON,
 				OP_SETVOLTAGESONGIB,
@@ -51,9 +52,11 @@ namespace chaos {
 			//wrapper interface
 			class ChaosCCALTControllerInterface:public ::common::ccaltcontroller::AbstractCCALTController {
 				protected:
-				chaos_driver::DrvMsg message;
+//				chaos_driver::DrvMsg message;
+				ChaosCCALTControllerDD*impl;
+
 				public: 
-				ChaosCCALTControllerInterface(chaos_driver::DriverAccessor*_accessor):accessor(_accessor){};
+				ChaosCCALTControllerInterface(chaos_driver::DriverAccessor*_accessor):accessor(_accessor){impl=(ChaosCCALTControllerDD*)_accessor->getImpl();};
 				chaos_driver::DriverAccessor* accessor;
 				int PowerOn(int32_t on_state);
 				int SetVoltagesOnGib(std::string gibUID,int32_t channel,double voltage);
