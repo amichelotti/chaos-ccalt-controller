@@ -64,7 +64,11 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib1SetPoint)
 				{
 					found=true;
-					this->snap1=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
+					chaos::common::data::CDWUniquePtr ret=GIB1->getSnapshotDataset(gib1SetPoint,GIB1Name);
+					if(ret.get()){
+					this->snap1=*ret;
+
+					}
 				}
 			}
 			if (!found)
@@ -80,7 +84,11 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib2SetPoint)
 				{
 					found=true;
-					this->snap2=GIB1->getSnapshotDataset(gib2SetPoint,GIB2Name);
+					chaos::common::data::CDWUniquePtr ret=GIB1->getSnapshotDataset(gib2SetPoint,GIB2Name);
+					if(ret.get()){
+					this->snap2=*ret;
+
+					}
 				}
 			}
 			if (!found)
@@ -96,7 +104,11 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib3SetPoint)
 				{
 					found=true;
-					this->snap3=GIB1->getSnapshotDataset(gib3SetPoint,GIB3Name);
+					chaos::common::data::CDWUniquePtr ret=GIB1->getSnapshotDataset(gib3SetPoint,GIB3Name);
+					if(ret.get()){
+
+					this->snap3=*ret;
+					}
 				}
 			}
 			if (!found)
@@ -112,7 +124,11 @@ void own::CmdCCTDefault::setHandler(c_data::CDataWrapper *data) {
 				if ((*Iter).second == gib4SetPoint)
 				{
 					found=true;
-					this->snap4=GIB1->getSnapshotDataset(gib4SetPoint,GIB4Name);
+					chaos::common::data::CDWUniquePtr ret=GIB1->getSnapshotDataset(gib4SetPoint,GIB4Name);
+					if(ret.get()){
+						this->snap4=*ret;
+
+					}
 				}
 			}
 			if (!found)
