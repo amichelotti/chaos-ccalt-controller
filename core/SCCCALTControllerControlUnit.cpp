@@ -50,7 +50,7 @@ PUBLISHABLE_CONTROL_UNIT_IMPLEMENTATION(::driver::ccaltcontroller::SCCCALTContro
      if((driver == NULL) || (driver->connect()!=0)){
          throw chaos::CException(-1,"cannot connect with driver",__PRETTY_FUNCTION__);
      }
-    std::vector<::driver::misc::ChaosDatasetAttribute*> ret= driver->getRemoteVariables();
+    std::vector< ::driver::misc::ChaosDatasetAttribute*> ret= driver->getRemoteVariables();
 	*/
 }
 /*Base Destructor*/
@@ -150,7 +150,7 @@ void ::driver::ccaltcontroller::SCCCALTControllerControlUnit::unitDefineActionAn
 							DataType::TYPE_INT32,
 							DataType::Input);
 	
-	addHandlerOnInputAttributeName<::driver::ccaltcontroller::SCCCALTControllerControlUnit, int32_t>(this,
+	addHandlerOnInputAttributeName< ::driver::ccaltcontroller::SCCCALTControllerControlUnit, int32_t>(this,
                                                                                            &::driver::ccaltcontroller::SCCCALTControllerControlUnit::setBehaviour, "registered_setpoint_behaviour");
 
 
