@@ -17,10 +17,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "CmdCCTSetPulseOnGib.h"
-
-#include <cmath>
-#include  <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <sstream>
 #define SCLAPP_ INFO_LOG(CmdCCTSetPulseOnGib) << "[" << getDeviceID() << "] "
 #define SCLDBG_ DBG_LOG(CmdCCTSetPulseOnGib) << "[" << getDeviceID() << "] "
